@@ -41,7 +41,6 @@ function Home() {
     <Layout>
         <h1>Est-ce que c'est bientôt le week-end ?</h1>
         <p>{_isWeekend()}</p>
-        <ProfilsSelection />
     </Layout>
   )
 }

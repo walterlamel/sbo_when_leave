@@ -1,15 +1,20 @@
 import { Link } from "react-router-dom"
+import { IPlayer, Profils } from "../utils/dataProfil"
+import { useEffect, useState } from "react"
 
-
-const Profils = ['ben', 'loic', 'baptiste']
 
 function ProfilsSelection() {
 
+  const [ profilsArray, setProfilsArray] = useState<string[]>([])
+
+  useEffect(() => {
+    setProfilsArray( Object.keys(Profils).map((profilKey) => profilKey) )
+  }, [])
 
   return (
     <div className="profilSelection">
-        {Profils.map(profil => (
-            <Link to={`/${profil}`}>{profil}</Link>
+        {profilsArray.map( (profil, i) => (
+          <Link key={i} to={`/${profil}`}>{Profils[profil as IPlayer].name}</Link>
         ))}
     </div>
   )

@@ -1,13 +1,9 @@
 import { useParams } from 'react-router-dom'
 import Layout from '../Layout'
 import { useEffect, useState } from 'react'
+import Counter from '../components/Counter';
+import { IPlayer, IProfil, Profils } from '../utils/dataProfil';
 
-interface IDiff {
-    sec : number;
-    min : number;
-    hour : number;
-    day : number;
-}
 
 const labelsWeekend = [
     {
@@ -42,8 +38,16 @@ const labelsDayend = [
         label : `Plus qu'une heure avant son départ !`
     },
     {
+        minHour : 2,
+        label : `Dans deux heures à peine, il décolle`
+    },
+    {
         minHour : 3,
         label : `Encore une petite demi-journée`
+    },
+    {
+        minHour : 4,
+        label : `Encore 4H malheureusement`
     },
     {
         minHour : 6,
@@ -51,42 +55,14 @@ const labelsDayend = [
     },
 ]
 
-const CorrespondanceName = {
-    ben : "Benji",
-    baptiste : "Baptiste",
-    loic : "Loïc"
-}
 
 
 function WhenLeave() {
 
-    let { name } = useParams()
-    const [resultWeekend, setResultWeekend] = useState<string|undefined>('')
-    const [resultDayend, setResultDayend] = useState<string|undefined>('')
+    let { name = '' } = useParams()
+    const [ profil, setProfil ] = useState<IProfil>(Profils.kevin)
+    const [targetDate, setTargetDate] = useState<Date>()
 
-    const _wichDay = () => {
-        switch(name){
-            case 'ben' :
-                return 6;
-            case 'baptiste' :
-                return 7;
-            case 'loic' :
-                default :
-                return 6
-        }
-    }
-
-    const _wichHour = () => {
-        switch(name){
-            case 'ben' :
-                return 17;
-            case 'baptiste' :
-                return 21;
-            case 'loic' :
-                default :
-                return 16
-        }
-    }
 
     const nextDay = (wichDay : number) : Date =>  {
         var dayOfWeek = wichDay;
@@ -99,50 +75,29 @@ function WhenLeave() {
             date.setDate(date.getDate() + ((-1) * diff))
         }
         
-        return date.setHours(_wichHour(), 0, 0)
+        return new Date(date.setHours(profil.endWeek, 0, 0))
     }
 
-    const dateDiff = (date1 : Date, date2 : Date) : IDiff => {
-        var diff = {
-            sec : 0,
-            min : 0,
-            hour : 0,
-            day : 0
-        }                           // Initialisation du retour
-        var tmp = date2 - date1;
-     
-        tmp = Math.floor(tmp/1000);             // Nombre de secondes entre les 2 dates
-        diff.sec = tmp % 60;                    // Extraction du nombre de secondes
-     
-        tmp = Math.floor((tmp-diff.sec)/60);    // Nombre de minutes (partie entière)
-        diff.min = tmp % 60;                    // Extraction du nombre de minutes
-     
-        tmp = Math.floor((tmp-diff.min)/60);    // Nombre d'heures (entières)
-        diff.hour = tmp % 24;                   // Extraction du nombre d'heures
-         
-        tmp = Math.floor((tmp-diff.hour)/24);   // Nombre de jours restants
-        diff.day = tmp;
-         
-        return diff;
+    const startEndDay = () => {
+        let today = new Date()
+        let endDay = today.setHours(profil.endDay, 0,0)
+        setTargetDate(new Date(endDay))
     }
 
     useEffect(() => {
-        let today = new Date()
-        let date = nextDay(_wichDay())
-        let diffWeekend = dateDiff(today, date)
-        setResultWeekend(labelsWeekend.find(d => diffWeekend.day <= d.minDay)?.label)
+        setProfil(Profils[name as IPlayer])
+        startEndDay()
+    }, [name])
 
-        let diffEndday = dateDiff(new Date(), today.setHours(_wichHour(), 0,0))
-        setResultDayend(labelsDayend.find(d => diffWeekend.day <= d.minHour)?.label)
-        console.log(diffEndday)
-    }, [])
+    useEffect(() => {
+        startEndDay()
+    }, [profil])
 
 
   return (
     <Layout>
-        <h1>Quand est-ce que {CorrespondanceName[name]} range ses affaires ?</h1>
-        {/* {resultWeekend} */}
-        {resultDayend}
+        <h1>Quand est-ce que  {Profils[name as IPlayer].name} range ses affaires ?</h1>
+        <Counter targetDate={targetDate} />
     </Layout>
   )
 }
